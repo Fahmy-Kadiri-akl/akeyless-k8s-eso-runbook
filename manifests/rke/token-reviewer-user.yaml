@@ -1,0 +1,34 @@
+---
+# ServiceAccount: Used by the Akeyless Gateway to call the K8s TokenReview API.
+# This SA does not run any pods -- its token is extracted and configured in
+# the Akeyless K8s auth method.
+#
+# Usage:
+#   kubectl apply -f token-reviewer-user.yaml
+#
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gateway-token-reviewer
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/part-of: akeyless-integration
+    app.kubernetes.io/component: token-reviewer
+    app.kubernetes.io/managed-by: kubectl
+---
+# Secret: Long-lived token for the gateway-token-reviewer ServiceAccount.
+# Kubernetes 1.24+ requires explicit Secret creation for long-lived SA tokens.
+# The token controller will populate .data.token after creation.
+#
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gateway-token-reviewer-token
+  namespace: kube-system
+  annotations:
+    kubernetes.io/service-account.name: gateway-token-reviewer
+  labels:
+    app.kubernetes.io/part-of: akeyless-integration
+    app.kubernetes.io/component: token-reviewer
+    app.kubernetes.io/managed-by: kubectl
+type: kubernetes.io/service-account-token

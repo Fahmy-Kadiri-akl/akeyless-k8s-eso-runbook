@@ -1,0 +1,25 @@
+---
+# ClusterRoleBinding: Grants the gateway-token-reviewer ServiceAccount
+# permission to perform TokenReview and SubjectAccessReview requests.
+# This is required for the Akeyless Gateway to validate K8s ServiceAccount
+# tokens during the K8s auth flow.
+#
+# Usage:
+#   kubectl apply -f token-reviewer-role.yaml
+#
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gateway-token-reviewer-binding
+  labels:
+    app.kubernetes.io/part-of: akeyless-integration
+    app.kubernetes.io/component: token-reviewer
+    app.kubernetes.io/managed-by: kubectl
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+  - kind: ServiceAccount
+    name: gateway-token-reviewer
+    namespace: kube-system

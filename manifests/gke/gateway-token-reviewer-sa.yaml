@@ -1,0 +1,40 @@
+---
+# ServiceAccount: Used by the Akeyless Gateway to call the K8s TokenReview API.
+# This SA does not run any pods -- its token is extracted and configured in
+# the Akeyless K8s auth method.
+#
+# For GKE Autopilot clusters, change the namespace to a non-system namespace
+# (e.g., akeyless-system) if kube-system is restricted.
+#
+# Usage:
+#   kubectl apply -f gateway-token-reviewer-sa.yaml
+#
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gateway-token-reviewer
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/part-of: akeyless-integration
+    app.kubernetes.io/component: token-reviewer
+    app.kubernetes.io/managed-by: kubectl
+---
+# ClusterRoleBinding: Grants the gateway-token-reviewer ServiceAccount
+# permission to perform TokenReview and SubjectAccessReview requests.
+#
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gateway-token-reviewer-binding
+  labels:
+    app.kubernetes.io/part-of: akeyless-integration
+    app.kubernetes.io/component: token-reviewer
+    app.kubernetes.io/managed-by: kubectl
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+  - kind: ServiceAccount
+    name: gateway-token-reviewer
+    namespace: kube-system
